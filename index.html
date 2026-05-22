@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Hash Mining - Crypto Miner Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<!-- MONETAG SDK — descomente e substitua YOUR_ZONE_ID -->
+<!-- <script src="https://alb.ptchn.com/sdk/sdk.js" data-zone="YOUR_ZONE_ID" data-sdk="show_YOUR_ZONE_ID"></script> -->
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#07091a;color:#e2e8ff;font-family:'Rajdhani',system-ui,sans-serif}
+:root{
+  --bg:#07091a;--bg1:#0b0e22;--bg2:#0f1330;--bg3:#141938;--bg4:#1c2350;
+  --b0:rgba(255,255,255,.05);--b1:rgba(255,255,255,.10);--b2:rgba(255,255,255,.20);
+  --cyan:#00e5ff;--gold:#f5c400;--gold2:#ffd700;--purple:#a855f7;
+  --green:#22c55e;--red:#ef4444;
+  --c-starter:#6b7280;--c-common:#22c55e;--c-rare:#3b82f6;
+  --c-epic:#a855f7;--c-legendary:#f59e0b;--c-mythic:#ec4899;--c-divine:#e2e8ff;
+}
+#root{display:flex;flex-direction:column;height:100vh;width:100%;max-width:480px;margin:0 auto;background:
+  radial-gradient(ellipse at 20% 0%,rgba(30,20,80,.6) 0%,transparent 50%),
+  radial-gradient(ellipse at 80% 100%,rgba(0,80,120,.4) 0%,transparent 50%),
+  var(--bg);position:relative;overflow:hidden}
+
+/* ── HEADER ─────────────────────────────────── */
+#hdr{height:56px;flex-shrink:0;background:rgba(11,14,34,.9);border-bottom:1px solid var(--b1);
+  display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:100;gap:8px}
+.cbadge{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--b1);
+  border-radius:18px;padding:5px 10px;height:36px;flex:1}
+.cbadge .ci{font-size:18px}
+.cbadge .cv{display:flex;flex-direction:column;line-height:1;flex:1}
+.cbadge .cl{font-size:8px;color:#4b5563;text-transform:uppercase;letter-spacing:.8px}
+.cbadge .cv2{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold)}
+.cbadge .cv2.gem{color:#60a5fa}
+.cbadge .cadd{width:22px;height:22px;border-radius:50%;background:var(--bg3);border:1px solid var(--b1);
+  color:#9ca3af;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.hdr-logo{font-family:'Orbitron',sans-serif;font-size:9px;color:#2d3748;letter-spacing:2px;flex-shrink:0}
+
+/* ── TAB BAR ─────────────────────────────────── */
+#tabs{height:58px;flex-shrink:0;background:rgba(11,14,34,.95);border-top:1px solid var(--b1);
+  display:flex;position:relative;z-index:100}
+.tbtn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:none;border:none;cursor:pointer;color:#374151;font-family:'Rajdhani',sans-serif;
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;position:relative;padding:4px 0}
+.tbtn .ti{font-size:20px}
+.tbtn.on{color:var(--cyan)}
+.tbtn .bdg{position:absolute;top:4px;right:calc(50% - 14px);background:#ef4444;color:#fff;
+  font-size:8px;font-weight:700;width:14px;height:14px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif}
+.tline{position:absolute;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  width:20%;transition:left .3s cubic-bezier(.4,0,.2,1)}
+
+/* ── CONTENT ─────────────────────────────────── */
+#cnt{flex:1;overflow-y:auto;overflow-x:hidden}
+#cnt::-webkit-scrollbar{width:0}
+.pg{animation:pgIn .2s ease}
+@keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HOME PAGE ─────────────────────────────────── */
+#pg-home{padding-bottom:8px}
+
+/* Player strip */
+.pstrip{background:var(--bg1);border-bottom:1px solid var(--b0);padding:8px 12px;
+  display:flex;align-items:center;gap:10px}
+.pavatar{width:40px;height:40px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#2a3a80,#080b1a);
+  border:2px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.pinfo{flex:1}
+.pname{font-weight:700;font-size:14px;color:#e2e8ff}
+.plvl{font-size:10px;color:#6b7280;margin-bottom:4px}
+.xpw{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.xpb{height:100%;background:linear-gradient(90deg,#7c3aed,var(--cyan));border-radius:2px;transition:width .5s}
+.p-hashrate{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--cyan);text-align:right;white-space:nowrap}
+
+/* Mining machine */
+.mine-area{display:flex;flex-direction:column;align-items:center;padding:16px 0 8px;position:relative}
+.mine-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 60%,rgba(30,15,90,.7) 0%,transparent 70%);pointer-events:none}
+.machine-wrap{position:relative;width:170px;height:170px;cursor:pointer;z-index:2}
+.mring{position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(0,229,255,.18);
+  animation:rspin 10s linear infinite;pointer-events:none}
+.mring::before{content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);
+  width:10px;height:10px;background:var(--cyan);border-radius:50%;box-shadow:0 0 10px var(--cyan)}
+.mring2{position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(168,85,247,.15);
+  animation:rspin 6s linear infinite reverse;pointer-events:none}
+.machine{position:absolute;inset:0;border-radius:26px;
+  background:linear-gradient(145deg,#0f2050,#060912);
+  border:2px solid rgba(0,229,255,.25);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  box-shadow:0 0 50px rgba(0,229,255,.12),inset 0 0 30px rgba(0,229,255,.06);
+  overflow:hidden;transition:transform .1s,box-shadow .1s}
+.machine.tapped{transform:scale(.9);box-shadow:0 0 80px rgba(0,229,255,.5),inset 0 0 40px rgba(0,229,255,.2)}
+.mpulse{position:absolute;width:90px;height:90px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,229,255,.25),transparent);
+  animation:pglow 2.5s ease-in-out infinite}
+.memoji{font-size:68px;position:relative;z-index:2}
+.mhs{font-family:'Orbitron',sans-serif;font-size:10px;color:rgba(0,229,255,.7);position:relative;z-index:2}
+.mine-tap-hint{font-size:11px;color:#374151;margin-top:6px;text-align:center;letter-spacing:.5px;text-transform:uppercase}
+
+/* Hash button */
+.hash-btn{
+  width:calc(100% - 24px);margin:6px 12px;height:58px;
+  background:linear-gradient(135deg,#b06c00,#f5c400 50%,#c88000);
+  border:none;border-radius:50px;padding:0 16px;
+  display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+  box-shadow:0 4px 24px rgba(245,196,0,.25),inset 0 1px 0 rgba(255,255,255,.25);
+  transition:transform .1s}
+.hash-btn:active{transform:scale(.97)}
+.hbl{display:flex;align-items:center;gap:10px}
+.hbicon{font-size:26px}
+.hbnums{text-align:left}
+.hbcount{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:900;color:#0e0700;line-height:1}
+.hbusd{font-size:10px;color:rgba(0,0,0,.5);font-weight:600}
+.hbr{font-size:26px}
+
+/* Quick actions */
+.qa-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 12px}
+.qa{background:var(--bg2);border:1px solid var(--b1);border-radius:10px;
+  padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.qa:active{background:var(--bg3)}
+.qa-ic{font-size:22px}
+.qa-lbl{font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:.3px;text-align:center}
+.qa-val{font-size:11px;font-weight:700;color:var(--gold)}
+
+/* ── MINERS PAGE ─────────────────────────────────── */
+#pg-miners{padding:12px}
+.ptitle{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:#e2e8ff;
+  text-align:center;margin-bottom:12px;letter-spacing:2px}
+.mcard{background:var(--bg2);border:1px solid var(--b1);border-radius:14px;padding:14px;
+  margin-bottom:10px;position:relative;overflow:hidden}
+.rtag{position:absolute;top:10px;right:0;padding:3px 10px 3px 8px;
+  font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  border-radius:3px 0 0 3px;border-left:1px solid;border-top:1px solid;border-bottom:1px solid}
+.mcard-top{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
+.mcard-icon{width:76px;height:76px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:38px;
+  flex-shrink:0;border:2px solid;background:var(--bg);box-shadow:0 0 20px rgba(0,0,0,.3)}
+.mcard-details{flex:1;min-width:0;padding-top:20px}
+.mcard-name{font-weight:700;font-size:16px;color:#e2e8ff;margin-bottom:8px}
+.mstat{display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg3);border-radius:8px;padding:6px 10px;margin-bottom:6px;gap:6px}
+.mstat-left{display:flex;align-items:center;gap:6px}
+.mstat-ic{font-size:14px}
+.mstat-lbl{font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.mstat-val{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--cyan)}
+.mbuy{width:100%;padding:10px;border-radius:10px;border:none;
+  font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s,transform .1s}
+.mbuy:active:not(:disabled){transform:scale(.97)}
+.mbuy:disabled{opacity:.35;cursor:not-allowed}
+.mbuy.gold{background:linear-gradient(135deg,#b06c00,#f5c400);color:#0e0700}
+.mbuy.owned{background:rgba(34,197,94,.1);border:1px solid #22c55e;color:#22c55e}
+
+/* ── TASKS PAGE ─────────────────────────────────── */
+#pg-tasks{padding:12px}
+.stitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+  color:#374151;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--b0)}
+.tcard{background:var(--bg2);border:1px solid var(--b1);border-radius:12px;
+  padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.tic{font-size:28px;width:40px;text-align:center;flex-shrink:0}
+.tinfo{flex:1}
+.tname{font-weight:700;font-size:13px;color:#e2e8ff;margin-bottom:4px}
+.tprog{font-size:10px;color:#6b7280;margin-bottom:4px}
+.tbw{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.tbar{height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:2px;transition:width .3s}
+.tright{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.treward{font-size:11px;font-weight:700;color:var(--gold);white-space:nowrap}
+.tclaim{padding:4px 10px;border-radius:8px;background:var(--green);color:#fff;
+  font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;border:none;cursor:pointer}
+.tclaim:disabled{background:var(--bg3);color:#4b5563}
+
+/* ── FRIENDS PAGE ─────────────────────────────────── */
+#pg-friends{padding:12px;text-align:center}
+.fhead{font-size:32px;margin:30px 0 12px}
+.ftitle{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:#e2e8ff;margin-bottom:6px}
+.fsub{font-size:12px;color:#6b7280;line-height:1.6;margin-bottom:16px}
+.inv-box{background:var(--bg2);border:1px solid var(--b1);border-radius:12px;
+  padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.inv-label{font-size:12px;color:#9ca3af}
+.inv-val{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--gold)}
+.inv-btn{width:100%;padding:14px;border-radius:50px;background:linear-gradient(135deg,#1a3070,#2563eb);
+  border:none;color:#fff;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;cursor:pointer}
+
+/* ── WALLET PAGE ─────────────────────────────────── */
+#pg-wallet{padding:12px}
+.wcard{background:var(--bg2);border:1px solid var(--b1);border-radius:14px;padding:16px;margin-bottom:10px}
+.wlabel{font-size:9px;color:#4b5563;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.wvalue{font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--gold);margin-bottom:2px}
+.wsub{font-size:11px;color:#6b7280}
+.wgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.witem{background:var(--bg3);border-radius:10px;padding:10px}
+.wilbl{font-size:9px;color:#4b5563;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.wiv{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:#e2e8ff}
+
+/* ── MODALS ─────────────────────────────────── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);
+  z-index:1000;display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s}
+.ov.show{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--b1);border-radius:22px 22px 0 0;
+  width:100%;max-width:480px;padding:20px;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  max-height:88vh;overflow-y:auto}
+.ov.show .modal{transform:translateY(0)}
+.modal::-webkit-scrollbar{width:0}
+.mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.mtitle{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:700;color:#e2e8ff}
+.mclose{width:30px;height:30px;border-radius:50%;background:var(--bg3);border:1px solid var(--b1);
+  color:#9ca3af;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* Daily bonus */
+.dbgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:14px}
+.dbday{background:var(--bg3);border:1px solid var(--b1);border-radius:7px;padding:5px 2px;text-align:center}
+.dbday.today{border-color:var(--gold)}
+.dbday.claimed{border-color:var(--green);opacity:.6}
+.dbday .ddi{font-size:16px;display:block}
+.dbday .ddn{font-size:7px;color:#4b5563;text-transform:uppercase;margin-top:1px}
+.dbday .ddv{font-size:8px;font-weight:700;color:var(--gold);margin-top:1px}
+.clmbtn{width:100%;padding:14px;border-radius:14px;
+  background:linear-gradient(135deg,#16803a,#22c55e);border:none;
+  font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:#fff;cursor:pointer;
+  box-shadow:0 4px 20px rgba(34,197,94,.3)}
+.clmbtn:disabled{background:var(--bg3);color:#4b5563;box-shadow:none}
+
+/* Boost modal */
+.boost-main{background:var(--bg3);border-radius:14px;padding:20px;text-align:center;margin-bottom:14px}
+.boost-ic{font-size:56px;margin-bottom:6px}
+.boost-x{font-family:'Orbitron',sans-serif;font-size:40px;font-weight:900;color:var(--gold);line-height:1}
+.boost-desc{font-size:13px;color:#9ca3af;margin-top:8px;line-height:1.5}
+.dur-wrap{margin:14px 0}
+.dur-lbl{display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:8px}
+.dur-lbl span{color:var(--cyan);font-weight:700}
+input[type=range]{width:100%;-webkit-appearance:none;height:5px;
+  background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:3px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;
+  background:var(--cyan);border-radius:50%;cursor:pointer;box-shadow:0 0 10px var(--cyan)}
+.cost-row{background:var(--bg);border-radius:10px;padding:12px;
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border:1px solid var(--b1)}
+.cost-lbl{font-size:12px;color:#6b7280}
+.cost-v{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:#60a5fa;
+  display:flex;align-items:center;gap:4px}
+.brow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bcnl{padding:13px;border-radius:12px;background:var(--bg3);border:1px solid var(--b1);
+  color:#e2e8ff;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.bconf{padding:13px;border-radius:12px;background:linear-gradient(135deg,#16803a,#22c55e);
+  border:none;color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+
+/* Ad UI */
+.adbox{background:var(--bg);border-radius:14px;border:1px solid var(--b1);padding:20px;
+  text-align:center;margin-bottom:14px}
+.adspon{font-size:8px;color:#374151;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+.adcont{font-size:14px;color:#e2e8ff;font-weight:600;margin-bottom:12px}
+.adtimer{font-family:'Orbitron',sans-serif;font-size:44px;font-weight:900;color:var(--cyan);line-height:1;margin-bottom:4px}
+.adhint{font-size:10px;color:#4b5563;margin-bottom:10px}
+.adpw{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.adpb{height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:3px;transition:width 1s linear}
+
+/* Season shop modal */
+.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sitem{background:var(--bg3);border-radius:12px;padding:12px;text-align:center;border:1px solid var(--b1)}
+.sitem-ic{font-size:36px;margin-bottom:6px}
+.sitem-name{font-weight:700;font-size:13px;color:#e2e8ff;margin-bottom:6px}
+.sitem-price{display:flex;align-items:center;justify-content:center;gap:4px;
+  font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:8px}
+.sbuy{width:100%;padding:8px;border-radius:8px;background:linear-gradient(135deg,#16803a,#22c55e);
+  border:none;color:#fff;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+
+/* Toast */
+.toast{position:fixed;top:64px;left:50%;transform:translateX(-50%);
+  background:rgba(26,32,80,.95);border:1px solid var(--b2);border-radius:28px;
+  padding:8px 20px;font-size:13px;font-weight:600;color:#e2e8ff;
+  z-index:2000;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.toast.show{opacity:1}
+
+/* Floating numbers */
+.flt{position:fixed;font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;
+  color:var(--gold);pointer-events:none;z-index:999;animation:fup .75s ease-out forwards}
+@keyframes fup{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-55px) scale(.7)}}
+
+/* Particles */
+.ptcl{position:fixed;pointer-events:none;z-index:998;border-radius:50%;
+  animation:pburst .55s ease-out forwards}
+@keyframes pburst{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:var(--t)}}
+
+/* Boost active banner */
+.boost-banner{background:linear-gradient(135deg,rgba(168,85,247,.2),rgba(0,229,255,.15));
+  border:1px solid rgba(0,229,255,.3);border-radius:10px;padding:8px 12px;
+  margin:0 12px 8px;display:flex;align-items:center;justify-content:space-between;display:none}
+.bb-left{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--cyan)}
+.bb-right{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:var(--gold)}
+
+/* Offline modal */
+.offline-info{text-align:center;padding:20px 0}
+.off-emoji{font-size:48px;margin-bottom:10px}
+.off-title{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#e2e8ff;margin-bottom:6px}
+.off-gained{font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;color:var(--gold);margin-bottom:4px}
+.off-sub{font-size:12px;color:#6b7280;margin-bottom:20px}
+.offok{width:100%;padding:14px;border-radius:14px;background:var(--cyan);
+  color:#000;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;border:none;cursor:pointer}
+
+/* Animations */
+@keyframes rspin{to{transform:rotate(360deg)}}
+@keyframes pglow{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:.75;transform:scale(1.25)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes boompop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+
+/* Rarity colors */
+.r-starter{color:var(--c-starter);border-color:var(--c-starter)}
+.r-common{color:var(--c-common);border-color:var(--c-common)}
+.r-rare{color:var(--c-rare);border-color:var(--c-rare)}
+.r-epic{color:var(--c-epic);border-color:var(--c-epic)}
+.r-legendary{color:var(--c-legendary);border-color:var(--c-legendary)}
+.r-mythic{color:var(--c-mythic);border-color:var(--c-mythic)}
+.r-divine{color:var(--c-divine);border-color:var(--c-divine)}
+.rbg-starter{background:rgba(107,114,128,.08)}
+.rbg-common{background:rgba(34,197,94,.08)}
+.rbg-rare{background:rgba(59,130,246,.08)}
+.rbg-epic{background:rgba(168,85,247,.08)}
+.rbg-legendary{background:rgba(245,158,11,.08)}
+.rbg-mythic{background:rgba(236,72,153,.08)}
+.rbg-divine{background:rgba(226,232,255,.06)}
+</style>
+</head>
+<body>
+<div id="root">
+
+  <!-- HEADER -->
+  <div id="hdr">
+    <div class="cbadge">
+      <span class="ci">💵</span>
+      <div class="cv"><span class="cl">CASH</span><span class="cv2" id="hcash">$0,0000</span></div>
+      <button class="cadd" onclick="openModal('season')">+</button>
+    </div>
+    <div class="hdr-logo">⛏</div>
+    <div class="cbadge">
+      <span class="ci">💎</span>
+      <div class="cv"><span class="cl">GEMS</span><span class="cv2 gem" id="hgems">2</span></div>
+      <button class="cadd" onclick="showToast('💎 Gems: obtidas via anúncios e conquistas')">?</button>
+    </div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div id="cnt">
+
+    <!-- HOME -->
+    <div id="pg-home" class="pg">
+      <div class="pstrip">
+        <div class="pavatar" id="pavatar">👤</div>
+        <div class="pinfo">
+          <div class="pname" id="pname">Carregando...</div>
+          <div class="plvl" id="plvl">LVL 1 · 0 XP</div>
+          <div class="xpw"><div class="xpb" id="xpb" style="width:0%"></div></div>
+        </div>
+        <div class="p-hashrate" id="phashrate">0.000 H/s</div>
+      </div>
+
+      <div class="boost-banner" id="bboost">
+        <div class="bb-left">🚀 BOOST ATIVO <span id="bbmult"></span></div>
+        <div class="bb-right" id="bbtimer">5:00</div>
+      </div>
+
+      <div class="mine-area">
+        <div class="mine-bg"></div>
+        <div class="machine-wrap" id="mwrap" onclick="doClick(event)" ontouchstart="doClick(event)">
+          <div class="mring"></div>
+          <div class="mring2"></div>
+          <div class="machine" id="machine">
+            <div class="mpulse"></div>
+            <span class="memoji">🤖</span>
+            <span class="mhs" id="mhs-disp">0.000 H/s</span>
+          </div>
+        </div>
+        <div class="mine-tap-hint">Toque para minerar</div>
+      </div>
+
+      <button class="hash-btn" id="hashbtn">
+        <div class="hbl">
+          <span class="hbicon">#️⃣</span>
+          <div class="hbnums">
+            <div class="hbcount" id="hbcount">0,000000</div>
+            <div class="hbusd" id="hbusd">~$0,000000</div>
+          </div>
+        </div>
+        <span class="hbr">💵</span>
+      </button>
+
+      <!-- BOTÃO DE ANÚNCIO -->
+      <button class="hash-btn" id="ad-btn" style="background:linear-gradient(135deg,#a855f7,#ec4899 50%,#be185d);margin-top:0;margin-bottom:6px" onclick="watchAdReward()">
+        <div class="hbl">
+          <span class="hbicon">📺</span>
+          <div class="hbnums">
+            <div class="hbcount" id="ad-btn-text" style="font-size:13px;color:#fff">WATCH AD</div>
+            <div class="hbusd" style="color:#fff">+2 💎</div>
+          </div>
+        </div>
+        <span class="hbr">✨</span>
+      </button>
+
+      <div class="qa-row">
+        <div class="qa" onclick="openModal('daily')">
+          <span class="qa-ic">📅</span>
+          <span class="qa-lbl">Daily Bonus</span>
+          <span class="qa-val" id="qa-daily">01:52</span>
+        </div>
+        <div class="qa" onclick="openModal('boost')">
+          <span class="qa-ic">🚀</span>
+          <span class="qa-lbl">Boost</span>
+          <span class="qa-val" id="qa-boost">4x</span>
+        </div>
+        <div class="qa" onclick="switchTab('tasks')">
+          <span class="qa-ic">📋</span>
+          <span class="qa-lbl">Missions</span>
+          <span class="qa-val" id="qa-season">27d</span>
+        </div>
+        <div class="qa" onclick="openModal('season')">
+          <span class="qa-ic">🎁</span>
+          <span class="qa-lbl">Season Shop</span>
+          <span class="qa-val">Exclusive</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MINERS -->
+    <div id="pg-miners" class="pg" style="display:none">
+      <div style="padding:12px">
+        <div class="ptitle">LOJA</div>
+        <div id="miners-list"></div>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div id="pg-tasks" class="pg" style="display:none">
+      <div style="padding:12px" id="tasks-content"></div>
+    </div>
+
+    <!-- FRIENDS -->
+    <div id="pg-friends" class="pg" style="display:none">
+      <div style="padding:20px 12px">
+        <div class="fhead">👥</div>
+        <div class="ftitle">Invite Friends</div>
+        <div class="fsub">Earn 10% of hashes mined by your friends.<br>The more friends, the more you earn!</div>
+        <div class="inv-box"><span class="inv-label">Friends invited</span><span class="inv-val" id="friend-count">0</span></div>
+        <div class="inv-box"><span class="inv-label">Referral earnings</span><span class="inv-val" id="ref-earn">+0 H</span></div>
+        <button class="inv-btn" onclick="inviteFriend()">📤 Invite Friend</button>
+      </div>
+    </div>
+
+    <!-- WALLET -->
+    <div id="pg-wallet" class="pg" style="display:none">
+      <div style="padding:12px" id="wallet-content"></div>
+    </div>
+
+  </div>
+
+  <!-- TAB BAR -->
+  <div id="tabs">
+    <div class="tline" id="tline"></div>
+    <button class="tbtn on" data-tab="home" onclick="switchTab('home')"><span class="ti">🏠</span>Home</button>
+    <button class="tbtn" data-tab="miners" onclick="switchTab('miners')"><span class="ti">⛏</span>Miners</button>
+    <button class="tbtn" data-tab="tasks" onclick="switchTab('tasks')"><span class="ti">📋</span>Tasks<span class="bdg" id="task-bdg">0</span></button>
+    <button class="tbtn" data-tab="friends" onclick="switchTab('friends')"><span class="ti">👥</span>Friends</button>
+    <button class="tbtn" data-tab="wallet" onclick="switchTab('wallet')"><span class="ti">💰</span>Wallet</button>
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- Daily Bonus -->
+<div class="ov" id="ov-daily"><div class="modal">
+  <div class="mhdr"><span class="mtitle">🎁 Daily Bonus</span><button class="mclose" onclick="closeModal('daily')">✕</button></div>
+  <div class="dbgrid" id="db-grid"></div>
+  <p style="font-size:11px;color:#6b7280;text-align:center;margin-bottom:14px">Login every day to increase your streak!</p>
+  <button class="clmbtn" id="db-btn" onclick="claimDaily()">🎁 Claim Bonus</button>
+</div></div>
+
+<!-- Boost -->
+<div class="ov" id="ov-boost"><div class="modal">
+  <div class="mhdr"><span class="mtitle">🚀 Mining Boost</span><button class="mclose" onclick="closeModal('boost')">✕</button></div>
+  <div id="boost-body"></div>
+</div></div>
+
+<!-- Season Shop -->
+<div class="ov" id="ov-season"><div class="modal">
+  <div class="mhdr"><span class="mtitle">🎁 Season Shop</span><button class="mclose" onclick="closeModal('season')">✕</button></div>
+  <div class="shop-grid" id="season-grid"></div>
+</div></div>
+
+<!-- Offline -->
+<div class="ov" id="ov-offline"><div class="modal">
+  <div class="offline-info">
+    <div class="off-emoji">⏰</div>
+    <div class="off-title">Welcome back!</div>
+    <div class="off-gained" id="off-gained">+0 H</div>
+    <div class="off-sub" id="off-sub">You were away for 0h. Offline efficiency: 50%</div>
+    <button class="offok" onclick="closeModal('offline')">✅ Claim & Continue</button> </div>
+</div></div>
+
+<!-- Toast -->
+<div class="toast" id="toast-el"></div>
+
+<script>
+/* ════════════════════════════════════════════════════
+   TELEGRAM INIT
+════════════════════════════════════════════════════ */
+if(window.Telegram?.WebApp){
+  Telegram.WebApp.ready();
+  Telegram.WebApp.expand();
+}
+
+/* ════════════════════════════════════════════════════
+   MONETAG — substitua YOUR_ZONE_ID
+════════════════════════════════════════════════════ */
+function showAd(){
+  return new Promise(resolve=>{
+    if(typeof show_YOUR_ZONE_ID!=='undefined'){
+      show_YOUR_ZONE_ID({type:'end',ymid:'u_'+Date.now()}).then(resolve).catch(resolve);
+    } else {
+      // DEMO: simula anúncio de 5s quando SDK não está carregado
+      setTimeout(resolve,5500);
+    }
+  });
+}
+
+/* ════════════════════════════════════════════════════
+   MINERS DATA
+════════════════════════════════════════════════════ */
+const MINERS=[
+  {id:'doge',    name:'DOGE Miner',     rarity:'starter',   emoji:'🤖', hs:12000,     cost:0,      gem:false, lvl:1,   desc:'Free starter miner'},
+  {id:'wif',     name:'WIF Turbine',    rarity:'common',    emoji:'💨', hs:46300,     cost:.5,     gem:false, lvl:10,  desc:'Efficient hash turbine'},
+  {id:'pengu',   name:'PENGU COLD',     rarity:'common',    emoji:'🐧', hs:289400,    cost:2.5,    gem:false, lvl:25,  desc:'Advanced cooling system'},
+  {id:'neiro',   name:'NEIRO FOMO',     rarity:'rare',      emoji:'🐕', hs:1331000,   cost:10,     gem:false, lvl:50,  desc:'Insane hash speed'},
+  {id:'popcat',  name:'POPCAT PUMP',    rarity:'rare',      emoji:'🐱', hs:3616900,   cost:25,     gem:false, lvl:100, desc:'Continuous mining pump'},
+  {id:'asteroid',name:'ASTEROID NODE',  rarity:'epic',      emoji:'☄️', hs:8101900,   cost:50,     gem:false, lvl:200, desc:'Asteroid node high power'},
+  {id:'shib',    name:'SHIB CORE',      rarity:'epic',      emoji:'🔴', hs:18518500,  cost:100,    gem:false, lvl:350, desc:'Ultra powerful SHIB core'},
+  {id:'floki',   name:'FLOKI RIG',      rarity:'epic',      emoji:'⚙️', hs:57870400,  cost:250,    gem:false, lvl:500, desc:'Next generation rig'},
+  {id:'pepe',    name:'PEPE QUANTUM',   rarity:'legendary', emoji:'🐸', hs:180000000, cost:500,    gem:false, lvl:650, desc:'PEPE quantum computing'},
+  {id:'wojak',   name:'WOJAK PRIME',    rarity:'legendary', emoji:'🧠', hs:520000000, cost:1500,   gem:false, lvl:800, desc:'Advanced mining AI'},
+  {id:'titan',   name:'CRYPTO TITAN',   rarity:'mythic',    emoji:'👑', hs:1500000000,cost:5000,   gem:false, lvl:900, desc:'Mythic absolute power'},
+  {id:'galaxy',  name:'GALAXY CORE',    rarity:'divine',    emoji:'🌌', hs:4500000000,cost:15000,  gem:false, lvl:1000,desc:'Cosmic energy'},
+];
+
+const RARITY_LABELS={
+  starter:'STARTER',common:'COMMON',rare:'RARE',
+  epic:'EPIC',legendary:'LEGENDARY',mythic:'MYTHIC',divine:'DIVINE'
+};
+
+/* ════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════ */
+const DEFAULT_STATE={
+  hashes:0, totalMined:0,
+  cash:0, gems:2,
+  xp:0, level:1,
+  miners:{doge:1},
+  lastSave:Date.now(),
+  lastDaily:0, dailyStreak:0,
+  boostEnd:0, boostMult:1,
+  adCooldown:0,
+  stats:{clicks:0,adsWatched:0,minersBought:0},
+  friends:0, refEarned:0,
+  tasks:{
+    click100:{done:0,claimed:false},
+    mine1m:{done:0,claimed:false},
+    buyminer:{done:0,claimed:false},
+    watchad:{done:0,claimed:false},
+    login3:{done:0,claimed:false},
+  }
+};
+
+let S;
+function loadState(){
+  try{
+    const raw=localStorage.getItem('hm_v2');
+    S=raw?{...DEFAULT_STATE,...JSON.parse(raw)}:{...DEFAULT_STATE};
+    if(!S.miners)S.miners={doge:1};
+    if(!S.stats)S.stats={clicks:0,adsWatched:0,minersBought:0};
+    if(!S.tasks)S.tasks={...DEFAULT_STATE.tasks};
+  }catch{S={...DEFAULT_STATE}}
+}
+function saveState(){
+  S.lastSave=Date.now();
+  try{localStorage.setItem('hm_v2',JSON.stringify(S))}catch{}
+}
+
+/* ════════════════════════════════════════════════════
+   CALCULATIONS
+════════════════════════════════════════════════════ */
+function getTotalHS(){
+  let r=0;
+  for(const [id,qty]of Object.entries(S.miners)){
+    const m=MINERS.find(x=>x.id===id);
+    if(m&&qty>0)r+=m.hs*qty;
+  }
+  return r;
+}
+
+function getBoostMult(){
+  if(Date.now()<S.boostEnd)return S.boostMult;
+  return 1;
+}
+
+function hashesToCash(h){return h*0.000000001}
+function fmtH(h){
+  if(h>=1e12)return (h/1e12).toFixed(6)+' TH';
+  if(h>=1e9)return (h/1e9).toFixed(6)+' GH';
+  if(h>=1e6)return (h/1e6).toFixed(6)+' MH';
+  if(h>=1e3)return (h/1e3).toFixed(3)+' KH';
+  return h.toFixed(6);
+}
+function fmtHS(r){
+  if(r>=1e12)return (r/1e12).toFixed(3)+' TH/s';
+  if(r>=1e9)return (r/1e9).toFixed(3)+' GH/s';
+  if(r>=1e6)return (r/1e6).toFixed(3)+' MH/s';
+  if(r>=1e3)return (r/1e3).toFixed(3)+' KH/s';
+  return r.toFixed(3)+' H/s';
+}
+function fmtCash(c){return '$'+c.toFixed(4)}
+function fmtBig(n){
+  if(n>=1e12)return (n/1e12).toFixed(2)+'T';
+  if(n>=1e9)return (n/1e9).toFixed(2)+'B';
+  if(n>=1e6)return (n/1e6).toFixed(2)+'M';
+  if(n>=1e3)return (n/1e3).toFixed(1)+'K';
+  return n.toFixed(0);
+}
+function xpForLevel(lvl){return Math.floor(500*Math.pow(1.15,lvl-1))}
+
+/* ════════════════════════════════════════════════════
+   OFFLINE PROGRESS
+════════════════════════════════════════════════════ */
+function calcOffline(){
+  const now=Date.now();
+  const elapsed=Math.min((now-S.lastSave)/1000,28800);
+  if(elapsed<60)return;
+  const gained=getTotalHS()*elapsed*0.5;
+  S.hashes+=gained;
+  S.totalMined+=gained;
+  S.cash=hashesToCash(S.totalMined);
+  const h=Math.floor(elapsed/3600);
+  const m=Math.floor((elapsed%3600)/60);
+  document.getElementById('off-gained').textContent='+'+fmtH(gained);
+  document.getElementById('off-sub').textContent=
+    `Você ficou ausente por ${h}h${m>0?' '+m+'m':''} · Eficiência offline: 50%`;
+  openModal('offline');
+}
+
+/* ════════════════════════════════════════════════════
+   GAME TICK
+════════════════════════════════════════════════════ */
+let lastTick=Date.now();
+function gameTick(){
+  const now=Date.now();
+  const dt=(now-lastTick)/1000;
+  lastTick=now;
+  const hs=getTotalHS()*getBoostMult();
+  const gained=hs*dt;
+  S.hashes+=gained;
+  S.totalMined+=gained;
+  S.cash=hashesToCash(S.totalMined);
+  // task progress
+  S.tasks.mine1m.done=Math.min(S.totalMined,1000000);
+  updateTaskBadge();
+  updateHUD();
+  saveTick();
+}
+
+let saveCounter=0;
+function saveTick(){saveCounter++;if(saveCounter>=30){saveState();saveCounter=0}}
+
+/* ════════════════════════════════════════════════════
+   CLICK MINING
+════════════════════════════════════════════════════ */
+let clickCooldown=false;
+function doClick(e){
+  e.preventDefault();
+  if(clickCooldown)return;
+  clickCooldown=true;
+  setTimeout(()=>clickCooldown=false,80);
+  const hs=getTotalHS();
+  const clickPower=Math.max(hs*0.1,5000)*getBoostMult();
+  S.hashes+=clickPower;
+  S.totalMined+=clickPower;
+  S.cash=hashesToCash(S.totalMined);
+  S.stats.clicks++;
+  S.tasks.click100.done=Math.min(S.stats.clicks,100);
+  // Visual
+  const mach=document.getElementById('machine');
+  mach.classList.add('tapped');
+  setTimeout(()=>mach.classList.remove('tapped'),100);
+  spawnFloat(e,'+'+fmtH(clickPower));
+  spawnParticles(e);
+  updateHUD();
+}
+
+function spawnFloat(e,txt){
+  const d=document.createElement('div');
+  d.className='flt';d.textContent=txt;
+  const x=e.clientX||(e.touches?.[0]?.clientX||window.innerWidth/2);
+  const y=e.clientY||(e.touches?.[0]?.clientY||200);
+  d.style.cssText=`left:${x-20}px;top:${y-20}px`;
+  document.body.appendChild(d);
+  d.addEventListener('animationend',()=>d.remove());
+}
+
+function spawnParticles(e){
+  const x=e.clientX||(e.touches?.[0]?.clientX||window.innerWidth/2);
+  const y=e.clientY||(e.touches?.[0]?.clientY||200);
+  const cols=['#00e5ff','#f5c400','#a855f7','#22c55e','#67e8f9'];
+  for(let i=0;i<10;i++){
+    const p=document.createElement('div');p.className='ptcl';
+    const a=(i/10)*Math.PI*2,d=25+Math.random()*35;
+    const tx=Math.cos(a)*d,ty=Math.sin(a)*d;
+    const sz=3+Math.random()*4;
+    p.style.cssText=`left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;background:${cols[i%5]};--t:translate(${tx}px,${ty}px)`;
+    document.body.appendChild(p);
+    p.addEventListener('animationend',()=>p.remove());
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   HUD UPDATE
+════════════════════════════════════════════════════ */
+function updateHUD(){
+  // Header
+  document.getElementById('hcash').textContent=fmtCash(S.cash);
+  document.getElementById('hgems').textContent=S.gems;
+  // Hash display
+  document.getElementById('hbcount').textContent=fmtH(S.hashes);
+  document.getElementById('hbusd').textContent='~'+fmtCash(S.cash);
+  // H/s
+  const hs=getTotalHS();
+  const bm=getBoostMult();
+  const disp=(hs*bm);
+  document.getElementById('mhs-disp').textContent=fmtHS(disp);
+  document.getElementById('phashrate').textContent=fmtHS(disp);
+  // Player
+  const tg=window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const uname=tg?.first_name||'Minerador';
+  document.getElementById('pname').textContent=uname;
+  document.getElementById('plvl').textContent=`LVL ${S.level} · ${fmtBig(S.xp)} XP`;
+  const xpNeed=xpForLevel(S.level);
+  document.getElementById('xpb').style.width=Math.min(S.xp/xpNeed*100,100)+'%';
+  // Boost banner
+  const bb=document.getElementById('bboost');
+  const now=Date.now();
+  if(now<S.boostEnd){
+    bb.style.display='flex';
+    const sec=Math.ceil((S.boostEnd-now)/1000);
+    const m=Math.floor(sec/60),s=sec%60;
+    document.getElementById('bbtimer').textContent=m+':'+(s<10?'0':'')+s;
+    document.getElementById('bbmult').textContent=S.boostMult+'x';
+  }else{
+    bb.style.display='none';
+  }
+  // Daily countdown
+  const nextDaily=S.lastDaily+86400000;
+  const canDaily=now>=nextDaily;
+  if(canDaily){
+    document.getElementById('qa-daily').textContent='Disponível!';
+  }else{
+    const rem=Math.ceil((nextDaily-now)/1000);
+    const h=Math.floor(rem/3600),m=Math.floor((rem%3600)/60);
+    document.getElementById('qa-daily').textContent=h+'h'+m+'m';
+  }
+  // Boost QA
+  document.getElementById('qa-boost').textContent=now<S.boostEnd?S.boostMult+'x ATIVO':'Boostar';
+  // Season countdown
+  const seasonDays=Math.max(0,Math.ceil((getSeasonEnd()-now)/86400000));
+  document.getElementById('qa-season').textContent=seasonDays+'d restantes';
+}
+
+function getSeasonEnd(){
+  const now=new Date();
+  return new Date(now.getFullYear(),now.getMonth()+1,1).getTime();
+}
+
+function updateTaskBadge(){
+  let cnt=0;
+  for(const[k,t]of Object.entries(S.tasks)){
+    if(!t.claimed&&t.done>=(TASK_DATA[k]?.goal||999999))cnt++;
+  }
+  const b=document.getElementById('task-bdg');
+  b.textContent=cnt;b.style.display=cnt>0?'flex':'none';
+}
+
+/* ════════════════════════════════════════════════════
+   TABS
+════════════════════════════════════════════════════ */
+const TABS=['home','miners','tasks','friends','wallet'];
+function switchTab(tab){
+  TABS.forEach(t=>{
+    document.getElementById('pg-'+t).style.display=t===tab?'':'none';
+    document.querySelector(`.tbtn[data-tab="${t}"]`)?.classList.toggle('on',t===tab);
+  });
+  const idx=TABS.indexOf(tab);
+  document.getElementById('tline').style.left=(idx*20)+'%';
+  if(tab==='miners')renderMiners();
+  if(tab==='tasks')renderTasks();
+  if(tab==='wallet')renderWallet();
+}
+
+/* ════════════════════════════════════════════════════
+   MINERS TAB
+════════════════════════════════════════════════════ */
+function renderMiners(){
+  const el=document.getElementById('miners-list');
+  el.innerHTML=MINERS.map(m=>{
+    const qty=S.miners[m.id]||0;
+    const owned=qty>0;
+    const hasLevel=S.level>=m.lvl;
+    const canBuy=S.cash>=m.cost&&m.cost>0&&hasLevel;
+    const totalHS=m.hs*qty;
+    const rc=`r-${m.rarity}`;
+    const rbg=`rbg-${m.rarity}`;
+    return `
+    <div class="mcard ${rbg}">
+      <div class="rtag ${rc}">${RARITY_LABELS[m.rarity]||m.rarity.toUpperCase()}</div>
+      <div class="mcard-top">
+        <div class="mcard-icon ${rc}">${m.emoji}</div>
+        <div class="mcard-details">
+          <div class="mcard-name">${m.name}</div>
+          <div class="mstat">
+            <div class="mstat-left"><span class="mstat-ic">#️⃣</span><span class="mstat-lbl">SPEED</span></div>
+            <div class="mstat-val">${fmtHS(m.hs)}</div>
+          </div>
+          <div class="mstat">
+            <div class="mstat-left"><span class="mstat-ic">LVL</span><span class="mstat-lbl">MIN LVL</span></div>
+            <div class="mstat-val" style="color:${hasLevel?'#22c55e':'#ef4444'}">${S.level}/${m.lvl}</div>
+          </div>
+          <div class="mstat">
+            <div class="mstat-left"><span class="mstat-ic">⚡</span><span class="mstat-lbl">${owned?'OWNED':'TOTAL W/ '+qty+'x'}</span></div>
+            <div class="mstat-val">${qty>0?qty+' un.':'0 un.'}</div>
+          </div>          ${qty>0?`<div class="mstat"><div class="mstat-left"><span class="mstat-ic">📊</span><span class="mstat-lbl">CONTRIBUTION</span></div><div class="mstat-val">${fmtHS(totalHS)}</div></div>`:''}"
+        </div>
+      </div>
+      ${m.cost===0
+        ?`<button class="mbuy owned" disabled>✅ STARTER MINER</button>`
+        :canBuy
+          ?`<button class="mbuy gold" onclick="buyMiner('${m.id}')">💵 BUY · ${fmtCash(m.cost)}</button>`
+          :!hasLevel
+            ?`<button class="mbuy" disabled style="background:var(--bg3);border:1px solid var(--b1);color:#4b5563">
+                🔐 LEVEL ${m.lvl} REQUIRED
+              </button>`
+          :qty>0
+            ?`<button class="mbuy gold" onclick="buyMiner('${m.id}')" ${S.cash<m.cost?'disabled':''}>
+                💵 BUY MORE · ${fmtCash(m.cost)}
+              </button>`
+            :`<button class="mbuy" disabled style="background:var(--bg3);border:1px solid var(--b1);color:#4b5563">
+                💵 ${fmtCash(m.cost)} · No balance
+              </button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function buyMiner(id){
+  const m=MINERS.find(x=>x.id===id);
+  if(!m||S.cash<m.cost||S.level<m.lvl)return;
+  S.cash-=m.cost;
+  S.totalMined-=(m.cost/0.000000001);
+  S.miners[id]=(S.miners[id]||0)+1;
+  S.stats.minersBought++;
+  S.tasks.buyminer.done=Math.min(S.stats.minersBought,1);
+  saveState();
+  showToast('⛏ '+m.name+' adquirido! +'+fmtHS(m.hs));
+  renderMiners();
+  updateHUD();
+}
+
+/* ════════════════════════════════════════════════════
+   TASKS
+════════════════════════════════════════════════════ */
+const TASK_DATA={
+  click100:{name:'First Miner',desc:'Click 100x manually',icon:'⛏',goal:100,reward:{gems:1},cat:'daily'},
+  mine1m:{name:'Million Hashes',desc:'Mine 1,000,000 Hashes',icon:'#️⃣',goal:1000000,reward:{gems:2},cat:'daily'},
+  buyminer:{name:'Mine Expansion',desc:'Buy your first miner',icon:'🤖',goal:1,reward:{gems:1},cat:'daily'},
+  watchad:{name:'Game Support',desc:'Watch 3 ads',icon:'📺',goal:3,reward:{gems:3},cat:'weekly'},
+  login3:{name:'Dedication',desc:'Login 3 days in a row',icon:'📅',goal:3,reward:{gems:5},cat:'weekly'},
+};
+
+function renderTasks(){
+  const el=document.getElementById('tasks-content');
+  const exchangeRate=100000;
+  const canExchange=S.cash>=exchangeRate;
+  const daily=Object.entries(TASK_DATA).filter(([,v])=>v.cat==='daily');
+  const weekly=Object.entries(TASK_DATA).filter(([,v])=>v.cat==='weekly');
+  el.innerHTML=`
+    <div style="background:var(--bg2);border:1px solid var(--b1);border-radius:10px;padding:12px;margin-bottom:12px">
+      <div class="stitle" style="margin:0 0 8px 0">Exchange Cash for Gems</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:12px;color:#9ca3af">Rate: ${exchangeRate.toLocaleString()} Cash = 1 💎</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input type="number" id="exchange-amount" value="1" min="1" max="${Math.floor(S.cash/exchangeRate)}" style="flex:1;background:var(--bg3);border:1px solid var(--b1);border-radius:6px;padding:6px;color:#e2e8ff;font-size:12px">
+        <button onclick="exchangeCashForGems()" style="background:linear-gradient(135deg,#a855f7,#ec4899);border:none;border-radius:6px;padding:6px 12px;color:#fff;font-weight:700;cursor:pointer;font-size:12px" ${!canExchange?'disabled style="opacity:.4"':''}>
+          Exchange
+        </button>
+      </div>
+      <div style="font-size:11px;color:#6b7280;margin-top:6px">Balance: ${fmtCash(S.cash)}</div>
+    </div>
+    <div class="stitle">Daily Tasks</div>
+  `;
+  function taskHTML([id,td]){
+    const t=S.tasks[id]||{done:0,claimed:false};
+    const pct=Math.min(t.done/td.goal*100,100);
+    const complete=t.done>=td.goal;
+    return `<div class="tcard">
+      <div class="tic">${td.icon}</div>
+      <div class="tinfo">
+        <div class="tname">${td.name}</div>
+        <div class="tprog">${fmtBig(t.done)} / ${fmtBig(td.goal)}</div>
+        <div class="tbw"><div class="tbar" style="width:${pct}%"></div></div>
+      </div>
+      <div class="tright">
+        <div class="treward">💎 ${td.reward.gems}</div>
+        <button class="tclaim" onclick="claimTask('${id}')" ${(!complete||t.claimed)?'disabled':''}>
+          ${t.claimed?'✅':complete?'Coletar':'...'}
+        </button>
+      </div>
+    </div>`;
+  }
+  el.innerHTML+=daily.map(taskHTML).join('')+`<div class="stitle" style="margin-top:12px">Weekly Missions</div>`+weekly.map(taskHTML).join('');
+}
+
+function exchangeCashForGems(){
+  const exchangeRate=100000;
+  const amount=parseInt(document.getElementById('exchange-amount').value)||1;
+  const cashNeeded=amount*exchangeRate;
+  if(S.cash<cashNeeded)return;
+  S.cash-=cashNeeded;
+  S.totalMined-=cashNeeded/0.000000001;
+  S.gems+=amount;
+  saveState();
+  showToast('💎 +'+amount+' 💎 Exchange completed!');
+  renderTasks();
+  updateHUD();
+}
+
+function claimTask(id){
+  const t=S.tasks[id];const td=TASK_DATA[id];
+  if(!t||t.claimed||t.done<td.goal)return;
+  t.claimed=true;
+  S.gems+=td.reward.gems;
+  saveState();
+  showToast('✅ Mission complete! +'+td.reward.gems+' 💎');
+  renderTasks();updateHUD();updateTaskBadge();
+}
+
+/* ════════════════════════════════════════════════════
+   WALLET
+════════════════════════════════════════════════════ */
+function renderWallet(){
+  const el=document.getElementById('wallet-content');
+  const hs=getTotalHS();
+  el.innerHTML=`
+    <div class="wcard">
+      <div class="wlabel">Total Minerado</div>
+      <div class="wvalue">${fmtH(S.totalMined)}</div>
+      <div class="wsub">≈ ${fmtCash(hashesToCash(S.totalMined))} em valor</div>
+    </div>
+    <div class="wcard">
+      <div class="wlabel">Poder de Mineração Atual</div>
+      <div class="wvalue" style="color:var(--cyan)">${fmtHS(hs*getBoostMult())}</div>
+      <div class="wsub">${Object.keys(S.miners).length} tipo(s) de minerador ativo(s)</div>
+      <div class="wgrid">
+        <div class="witem"><div class="wilbl">Level</div><div class="wiv">LVL ${S.level}</div></div>
+        <div class="witem"><div class="wilbl">Gems</div><div class="wiv">💎 ${S.gems}</div></div>
+        <div class="witem"><div class="wilbl">Cliques</div><div class="wiv">${fmtBig(S.stats.clicks)}</div></div>
+        <div class="witem"><div class="wilbl">Anúncios</div><div class="wiv">${S.stats.adsWatched}</div></div>
+      </div>
+    </div>
+    <div class="wcard">
+      <div class="wlabel">Frota de Mineradores</div>
+      ${MINERS.filter(m=>(S.miners[m.id]||0)>0).map(m=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--b0)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:20px">${m.emoji}</span>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#e2e8ff">${m.name}</div>
+              <div style="font-size:10px;color:#6b7280">${S.miners[m.id]||0} un. · ${fmtHS(m.hs*(S.miners[m.id]||0))}</div>
+            </div>
+          </div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--cyan)">${RARITY_LABELS[m.rarity]}</div>
+        </div>`).join('')||'<div style="color:#4b5563;font-size:13px;padding:10px 0">Nenhum minerador ainda</div>'}
+    </div>`;
+}
+
+/* ════════════════════════════════════════════════════
+   DAILY BONUS
+════════════════════════════════════════════════════ */
+const DAILY_REWARDS=[
+  {icon:'💎',val:'1 Gem'},{icon:'#️⃣',val:'Hashes'},
+  {icon:'💎',val:'2 Gems'},{icon:'🚀',val:'Boost 2h'},
+  {icon:'💎',val:'3 Gems'},{icon:'🔥',val:'Bônus XP'},
+  {icon:'👑',val:'5 Gems'},
+];
+
+function renderDailyModal(){
+  const streak=S.dailyStreak%7;
+  const canClaim=Date.now()>=S.lastDaily+86400000;
+  document.getElementById('db-grid').innerHTML=DAILY_REWARDS.map((r,i)=>`
+    <div class="dbday ${i===streak&&canClaim?'today':''} ${i<streak||(!canClaim&&i===streak)?'claimed':''}">
+      <span class="ddi">${r.icon}</span>
+      <span class="ddn">Dia ${i+1}</span>
+      <span class="ddv">${r.val}</span>
+    </div>`).join('');
+  const btn=document.getElementById('db-btn');
+  btn.disabled=!canClaim;
+  btn.textContent=canClaim?'🎁 Coletar Bônus':'✅ Já coletado hoje';
+}
+
+function claimDaily(){
+  if(Date.now()<S.lastDaily+86400000)return;
+  S.lastDaily=Date.now();
+  S.dailyStreak++;
+  const r=DAILY_REWARDS[(S.dailyStreak-1)%7];
+  S.gems+=r.val.includes('Gem')?parseInt(r.val):0;
+  if(r.val.includes('Boost')){S.boostEnd=Date.now()+7200000;S.boostMult=2;}
+  S.tasks.login3.done=Math.min(S.dailyStreak,3);
+  saveState();
+  showToast('🎁 Dia '+S.dailyStreak+'! '+r.icon+' '+r.val);
+  closeModal('daily');updateHUD();
+}
+
+/* ════════════════════════════════════════════════════
+   BOOST MODAL
+════════════════════════════════════════════════════ */
+let adActive=false,adTimer=0,adInterval=null,boostDurMin=5;
+
+function renderBoostModal(){
+  const body=document.getElementById('boost-body');
+  const now=Date.now();
+  const cooldown=now<S.adCooldown;
+  const boostActive=now<S.boostEnd;
+  const coolSec=Math.ceil((S.adCooldown-now)/1000);
+
+  if(boostActive){
+    const rem=Math.ceil((S.boostEnd-now)/1000);
+    const m=Math.floor(rem/60),s=rem%60;
+    body.innerHTML=`
+      <div class="boost-main">
+        <div class="boost-ic">🚀</div>
+        <div class="boost-x">${S.boostMult}x</div>
+        <div class="boost-desc">Boost ativo! Mineração acelerada.</div>
+      </div>
+      <div style="text-align:center;padding:16px 0;font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;color:var(--cyan)">${m}:${s<10?'0':''}${s} restante</div>
+      <button class="bconf" style="width:100%" onclick="closeModal('boost')">✅ Entendido</button>`;
+    return;
+  }
+
+  if(adActive){renderAdUI(body);return;}
+
+  body.innerHTML=`
+    <div class="boost-main">
+      <div class="boost-ic">🚀</div>
+      <div class="boost-x" id="bx-mult">4x</div>
+      <div class="boost-desc">Multiplica a mineração de hashes pelo tempo escolhido.</div>
+    </div>
+    <div class="dur-wrap">
+      <div class="dur-lbl">Duração <span id="dur-val">${boostDurMin} min</span></div>
+      <input type="range" min="1" max="30" value="${boostDurMin}" oninput="onDurChange(this.value)">
+    </div>
+    <div class="cost-row">
+      <span class="cost-lbl">Custo</span>
+      <span class="cost-v">💎 <span id="boost-cost">0</span></span>
+    </div>
+    <div class="brow">
+      <button class="bcnl" onclick="closeModal('boost')">Cancelar</button>
+      <button class="bconf" onclick="startBoostAd()" ${cooldown?'disabled':''}>
+        ${cooldown?`⏳ ${Math.floor(coolSec/60)}:${coolSec%60<10?'0':''}${coolSec%60}`:'📺 Assistir Anúncio'}
+      </button>
+    </div>
+    <p style="font-size:10px;color:#374151;text-align:center;margin-top:10px">Disponível a cada 100 segundos</p>`;
+  onDurChange(boostDurMin);
+}
+
+function onDurChange(v){
+  boostDurMin=parseInt(v);
+  const el=document.getElementById('dur-val');
+  const ce=document.getElementById('boost-cost');
+  if(el)el.textContent=v+' min';
+  if(ce)ce.textContent=Math.max(0,Math.floor(boostDurMin/5)-1);
+}
+
+let adCooldownRemaining=0;
+let adCooldownInterval=null;
+
+function watchAdReward(){
+  if(adCooldownRemaining>0)return;
+  S.gems+=2;
+  S.stats.adsWatched++;
+  S.tasks.watchad.done=Math.min(S.stats.adsWatched,3);
+  saveState();
+  showToast('📺 +2 💎 Anúncio assistido!');
+  updateHUD();
+  updateTaskBadge();
+  adCooldownRemaining=90;
+  updateAdButton();
+  adCooldownInterval=setInterval(()=>{
+    adCooldownRemaining--;
+    updateAdButton();
+    if(adCooldownRemaining<=0)clearInterval(adCooldownInterval);
+  },1000);
+}
+
+function updateAdButton(){
+  const btn=document.getElementById('ad-btn');
+  const txt=document.getElementById('ad-btn-text');
+  if(adCooldownRemaining>0){
+    btn.disabled=true;
+    txt.textContent=`⏳ ${adCooldownRemaining}s`;
+  }else{
+    btn.disabled=false;
+    txt.textContent='ASSISTIR ANÚNCIO';
+  }
+}
+
+function startBoostAd(){
+  if(Date.now()<S.adCooldown)return;
+  adActive=true;adTimer=5;
+  renderAdUI(document.getElementById('boost-body'));
+  showAd();
+  adInterval=setInterval(()=>{
+    adTimer--;
+    const el=document.getElementById('ad-timer');
+    const pb=document.getElementById('ad-pb');
+    if(el)el.textContent=adTimer;
+    if(pb)pb.style.width=((5-adTimer)/5*100)+'%';
+    if(adTimer<=0){
+      clearInterval(adInterval);
+      adActive=false;
+      S.boostEnd=Date.now()+boostDurMin*60000;
+      S.boostMult=4;
+      S.adCooldown=Date.now()+100000;
+      S.stats.adsWatched++;
+      S.tasks.watchad.done=Math.min(S.stats.adsWatched,3);
+      S.gems+=1;
+      saveState();
+      showToast('🚀 BOOST 4x ativo por '+boostDurMin+'min! +1 💎');
+      closeModal('boost');updateHUD();updateTaskBadge();
+    }
+  },1000);
+}
+
+function renderAdUI(body){
+  const pct=Math.round((5-adTimer)/5*100);
+  body.innerHTML=`
+    <div class="adbox">
+      <div class="adspon">Anúncio Patrocinado</div>
+      <div class="adcont">🎮 CryptoQuest — Mine recompensas reais agora!</div>
+      <div class="adtimer" id="ad-timer">${adTimer}</div>
+      <div class="adhint">Assista até o final para ativar o Boost</div>
+      <div class="adpw"><div class="adpb" id="ad-pb" style="width:${pct}%"></div></div>
+    </div>
+    <p style="font-size:11px;color:#374151;text-align:center">Não feche este painel durante o anúncio</p>`;
+}
+
+/* ════════════════════════════════════════════════════
+   SEASON SHOP
+════════════════════════════════════════════════════ */
+const SEASON_ITEMS=[
+  {id:'doge_s',name:'DOGE Miner',icon:'🤖',price:5,type:'miner',minerId:'doge'},
+  {id:'booster',name:'Super Boost 8h',icon:'🚀',price:50,type:'boost'},
+  {id:'xp10',name:'10 XP',icon:'⭐',price:15,type:'xp',xp:10},
+  {id:'xp50',name:'50 XP',icon:'🌟',price:60,type:'xp',xp:50},
+  {id:'xp100',name:'100 XP',icon:'💫',price:100,type:'xp',xp:100},
+  {id:'xp250',name:'250 XP',icon:'✨',price:200,type:'xp',xp:250},
+];
+
+function renderSeasonShop(){
+  document.getElementById('season-grid').innerHTML=SEASON_ITEMS.map(it=>`
+    <div class="sitem">
+      <div class="sitem-ic">${it.icon}</div>
+      <div class="sitem-name">${it.name}</div>
+      <div class="sitem-price">💎 ${it.price}</div>
+      <button class="sbuy" onclick="buySeasonItem('${it.id}')" ${S.gems<it.price?'disabled':''}>Comprar</button>
+    </div>`).join('');
+}
+
+function buySeasonItem(id){
+  const it=SEASON_ITEMS.find(x=>x.id===id);
+  if(!it||S.gems<it.price)return;
+  S.gems-=it.price;
+  if(it.type==='miner'){S.miners[it.minerId]=(S.miners[it.minerId]||0)+1;}
+  if(it.type==='boost'){S.boostEnd=Date.now()+28800000;S.boostMult=4;}
+  if(it.type==='xp'){S.xp+=it.xp;}
+  saveState();
+  showToast('✅ '+it.icon+' '+it.name+' adquirido!');
+  renderSeasonShop();updateHUD();
+}
+
+/* ════════════════════════════════════════════════════
+   MODAL SYSTEM
+════════════════════════════════════════════════════ */
+function openModal(id){
+  if(id==='daily'){renderDailyModal();}
+  if(id==='boost'){renderBoostModal();}
+  if(id==='season'){renderSeasonShop();}
+  document.getElementById('ov-'+id)?.classList.add('show');
+}
+function closeModal(id){
+  document.getElementById('ov-'+id)?.classList.remove('show');
+}
+document.querySelectorAll('.ov').forEach(ov=>{
+  ov.addEventListener('click',e=>{if(e.target===ov){const m=ov.id.replace('ov-','');closeModal(m);}});
+});
+
+/* ════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg){
+  const el=document.getElementById('toast-el');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2600);
+}
+
+/* ════════════════════════════════════════════════════
+   FRIENDS
+════════════════════════════════════════════════════ */
+function inviteFriend(){
+  const tg=window.Telegram?.WebApp;
+  const botLink='https://t.me/seu_bot?start=ref_'+Date.now();
+  if(tg?.openTelegramLink){tg.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent(botLink)+'&text='+encodeURIComponent('⛏ Minere Hashes comigo no Hash Mining!'));}
+  else{navigator.clipboard?.writeText(botLink);showToast('🔗 Link copiado!');}
+}
+
+/* ════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════ */
+function init(){
+  loadState();
+  calcOffline();
+  switchTab('home');
+  updateHUD();
+  updateTaskBadge();
+  setInterval(gameTick,100);
+  setInterval(updateHUD,1000);
+  setInterval(saveState,30000);
+  // Set player avatar emoji based on level
+  const avatars=['👤','⛏','💎','🔮','👑','🌌'];
+  const ai=Math.min(Math.floor(S.level/200),avatars.length-1);
+  document.getElementById('pavatar').textContent=avatars[ai];
+}
+
+init();
+</script>
+</body>
+</html>
